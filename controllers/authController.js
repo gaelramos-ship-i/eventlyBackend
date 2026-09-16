@@ -3,6 +3,7 @@ const validator = require('validator')
 const bcrypt = require('bcryptjs')
 const { sequelize } = require('../config/db')
 const { QueryTypes } = require('sequelize')
+const User = require('../models/userModel')
 
 const JWT_SECRET = process.env.JWT_SECRET
 const JWT_EXPIRES_IN = '24h'
@@ -17,12 +18,9 @@ const register = async (req, res) => {
     try {
         const { name, email, password } = req.body
 
-        const existingUser = await sequelize.query('SELECT COUNT(email_user) FROM "Users" WHERE email_user = :email', {
-            type: QueryTypes.SELECT,
-            replacements: { email}
-        })
+        const isExistingUser = await User.isExistingUser(email)
 
-        if(existingUser[0].count == 1)
+        if(isExistingUser == 1)
             return res.status(400).json({message: 'Email is already use'})
 
         const isPasswordOK = validator.isStrongPassword(password, {
@@ -42,19 +40,9 @@ const register = async (req, res) => {
             return res.status(400).json({message: 'You must provide a valid email'})
         }
 
-        const hash = await bcrypt.hash(password, 15)
+        await User.createUser(name, email, password)
 
-        await sequelize.query('INSERT INTO "Users"(name_user, email_user, pass_user) VALUES (:name, :email, :password) ', {
-            type: QueryTypes.INSERT,
-            replacements: { name, email, password: hash }
-        })
-
-        const userQuery = await sequelize.query('SELECT * FROM "Users" WHERE email_user = :email', {
-            type: QueryTypes.SELECT,
-            replacements: { email }
-        })
-
-        const user = userQuery[0]
+        const user = await User.userQuery(email)
         const token = generateToken(user.id_user)
         res.status(201).json({
             message: 'User create successfully',
@@ -73,12 +61,7 @@ const login = async (req, res) => {
         if (!email || !password)
             return res.status(400).json({ message: 'Please provide email and password' })
 
-        const userQuery = await sequelize.query('SELECT *,COUNT(email_user) FROM "Users" WHERE email_user = :email GROUP BY id_user', {
-            type: QueryTypes.SELECT,
-            replacements: {email}
-        })
-
-        const user = userQuery[0]
+        const user = await User.userQuery(email)
         if(user.count == 0)
             return res.status(401).json({message: "Invalid credentials"})
 

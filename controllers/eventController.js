@@ -46,3 +46,29 @@ exports.addEvent = async (req, res) => {
         });
     }
 };
+
+// En tant qu’utilisateur inscrit, je veux pouvoir modifier mon évènement. 
+
+exports.updateEvent = async (req, res) => {
+    try {
+        
+        const userId = req.user.id_user;
+        const { name, date } = req.body
+
+        const event = await sequelize.query(`SELECT id_event FROM "Events" WHERE fk_id_user = :userId AND name_event = :name AND date_event = :date`, {
+            type: QueryTypes.SELECT,
+            replacements: {
+                userId,
+                name,
+                date
+            }
+        })
+
+        console.log(event)
+        
+    } catch (err) {
+        return res.status(500).json({
+            message: "Error updating event"
+        });
+    }
+}
