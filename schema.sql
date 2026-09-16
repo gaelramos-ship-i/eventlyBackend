@@ -1,37 +1,63 @@
-CREATE TABLE users (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    pseudo VARCHAR(50) NOT NULL,
-    email VARCHAR(255) NOT NULL UNIQUE,
-    mot_de_passe VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- PostgreSQL Script
+-- Adaptation du schéma MySQL Workbench
+
+-- -----------------------------------------------------
+-- Schema mydb
+-- -----------------------------------------------------
+CREATE SCHEMA IF NOT EXISTS mydb;
+SET search_path TO mydb;
+
+-- -----------------------------------------------------
+-- Table mydb.Users
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS mydb."Users" (
+  id_user SERIAL PRIMARY KEY,
+  pseudo_user VARCHAR(50) NOT NULL,
+  email_user VARCHAR(255) NOT NULL,
+  password_user VARCHAR(100) NOT NULL,
+  CONSTRAINT email_events_unique UNIQUE (email_user)
 );
 
-CREATE TABLE events (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    user_id INT NOT NULL,
-    type VARCHAR(100) NOT NULL,
-    nom VARCHAR(255) NOT NULL,
-    date DATETIME NOT NULL,
-    adresse VARCHAR(255) NOT NULL,
-    description TEXT,
-    prix DECIMAL(10,2) NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (user_id) REFERENCES users(id)
-        ON DELETE CASCADE
+-- -----------------------------------------------------
+-- Table mydb.Events
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS mydb."Events" (
+  id_event SERIAL PRIMARY KEY,
+  name_event VARCHAR(255) NOT NULL,
+  type_event VARCHAR(100) NOT NULL,
+  date_event TIMESTAMP NOT NULL,
+  address_event VARCHAR(255) NOT NULL,
+  description_event TEXT NOT NULL,
+  price_event DECIMAL(10,2) NULL,
+  fk_id_user INT NOT NULL,
+  CONSTRAINT fk_events_users1
+    FOREIGN KEY (fk_id_user)
+    REFERENCES mydb."Users" (id_user)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
 );
 
-CREATE TABLE favorites (
-    user_id INT NOT NULL,
-    event_id INT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+-- Index sur la clé étrangère pour optimiser les jointures
+CREATE INDEX IF NOT EXISTS fk_events_users1_idx ON mydb."Events" (fk_id_user);
 
-    PRIMARY KEY (user_id, event_id),
-
-    FOREIGN KEY (user_id) REFERENCES users(id)
-        ON DELETE CASCADE,
-
-    FOREIGN KEY (event_id) REFERENCES events(id)
-        ON DELETE CASCADE
+-- -----------------------------------------------------
+-- Table mydb.events has users
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS mydb."events_has_users" (
+  fk_id_event INT NOT NULL,
+  fk_id_user INT NOT NULL,
+  PRIMARY KEY (fk_id_event, fk_id_user),
+  CONSTRAINT fk_events_has_users_events
+    FOREIGN KEY (fk_id_event)
+    REFERENCES mydb."Events" (id_event)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT fk_events_has_users_users1
+    FOREIGN KEY (fk_id_user)
+    REFERENCES mydb."Users" (id_user)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
 );
+
+-- Index sur la clé étrangère
+CREATE INDEX IF NOT EXISTS fk_events_has_users_users1_idx ON mydb."events_has_users" (fk_id_user);
