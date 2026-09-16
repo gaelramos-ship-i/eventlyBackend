@@ -20,7 +20,7 @@ exports.addEvent = async (req, res) => {
             }
         })
 
-        if(eventExist)
+        if(eventExist.length > 0)
             return res.status(409).json({ message: "This event is already created"})
 
         await sequelize.query('INSERT INTO "Events"(name_event, type_event, date_event, address_event, description_event, price_event, fk_id_user) VALUES(:name, :type, :date, :address, :description, :price, :userId)', {
@@ -37,7 +37,7 @@ exports.addEvent = async (req, res) => {
         })
 
         res.status(201).json({
-            message: 'Event create successfully',
+            message: 'Event created successfully',
         })
 
     } catch (err) {
