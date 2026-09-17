@@ -1,8 +1,6 @@
 const jwt = require('jsonwebtoken')
 const validator = require('validator')
 const bcrypt = require('bcryptjs')
-const { sequelize } = require('../config/db')
-const { QueryTypes } = require('sequelize')
 const User = require('../models/userModel')
 
 const JWT_SECRET = process.env.JWT_SECRET
