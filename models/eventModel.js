@@ -45,3 +45,13 @@ exports.updateEvent = async (fields, replacements) => {
     }) 
     return updateEvent
 }
+
+exports.deleteEvent = async (idEvent) => {
+    const deleteEvent = await sequelize.query('DELETE FROM "Events" WHERE id_event = :idEvent', {
+        type: QueryTypes.DELETE,
+        replacements: {
+            idEvent
+        }
+    })
+    return deleteEvent
+}

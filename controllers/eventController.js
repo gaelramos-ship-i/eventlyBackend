@@ -95,3 +95,30 @@ exports.updateEvent = async (req, res) => {
         });
     }
 }
+
+// En tant qu’utilisateur inscrit, je veux pouvoir supprimer mon évènement.
+
+exports.deleteEvent = async (req, res) => {
+    try {
+        const idUser = req.user.id_user
+        const { idEvent } = req.params
+
+        const event = await Event.getEventById(idEvent)
+
+        if (event.length === 0)
+            return res.status(404).json({ message: "Event not found" })
+
+        if (event[0].fk_id_user !== idUser)
+            return res.status(403).json({ message: "You are note the creator of this event" })
+
+        const deletingEvent = await Event.deleteEvent(idEvent)
+
+        if(deletingEvent)
+            return res.status(200).json({ message: "Deleting Event successful"})
+        
+    } catch (err) {
+        return res.status(500).json({
+            message: "Error deleting event"
+        });
+    }
+}
