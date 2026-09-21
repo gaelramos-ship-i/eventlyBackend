@@ -26,3 +26,11 @@ exports.userQuery = async (email) => {
     })
     return userQuery[0]
 }
+
+exports.getUserById = async (id) => {
+    const user = await sequelize.query('SELECT * FROM "Users" WHERE id_user = :id', {
+        type: QueryTypes.SELECT,
+        replacements: { id }
+    })
+    return user
+}

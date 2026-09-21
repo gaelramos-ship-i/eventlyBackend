@@ -109,7 +109,7 @@ exports.deleteEvent = async (req, res) => {
             return res.status(404).json({ message: "Event not found" })
 
         if (event[0].fk_id_user !== idUser)
-            return res.status(403).json({ message: "You are note the creator of this event" })
+            return res.status(403).json({ message: "You are not the creator of this event" })
 
         const deletingEvent = await Event.deleteEvent(idEvent)
 
@@ -117,8 +117,6 @@ exports.deleteEvent = async (req, res) => {
             return res.status(200).json({ message: "Deleting Event successful"})
         
     } catch (err) {
-        return res.status(500).json({
-            message: "Error deleting event"
-        });
+        return res.status(500).json({ message: "Error deleting event" });
     }
 }
