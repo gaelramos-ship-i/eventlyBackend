@@ -55,3 +55,10 @@ exports.deleteEvent = async (idEvent) => {
     })
     return deleteEvent
 }
+
+exports.getAllEvent = async () => {
+    const getEvent = await sequelize.query('SELECT * FROM "Events"', {
+        type: QueryTypes.SELECT
+    })
+    return getEvent
+}

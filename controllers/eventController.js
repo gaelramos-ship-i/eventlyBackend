@@ -86,8 +86,8 @@ exports.updateEvent = async (req, res) => {
 
         const updatingEvent = await Event.updateEvent(fields, replacements)
 
-        if(updatingEvent)
-            return res.status(200).json({ message: "Updating Event successful"})
+        if (updatingEvent)
+            return res.status(200).json({ message: "Updating Event successful" })
 
     } catch (err) {
         return res.status(500).json({
@@ -113,10 +113,25 @@ exports.deleteEvent = async (req, res) => {
 
         const deletingEvent = await Event.deleteEvent(idEvent)
 
-        if(deletingEvent)
-            return res.status(200).json({ message: "Deleting Event successful"})
-        
+        if (deletingEvent)
+            return res.status(200).json({ message: "Deleting Event successful" })
+
     } catch (err) {
         return res.status(500).json({ message: "Error deleting event" });
+    }
+}
+
+// En tant qu’utilisateur non-inscrit je veux pouvoir rechercher un évènement.
+
+exports.getAllEvent = async (req, res) => {
+    try {
+        const getEvent = await Event.getAllEvent()
+        if (getEvent)
+            return res.status(200).json({
+                getEvent,
+                message: "Reading event successfull"
+            })
+    } catch (err) {
+        return res.status(500).json({ message: "Error view event" });
     }
 }
