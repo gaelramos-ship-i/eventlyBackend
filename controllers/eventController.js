@@ -123,9 +123,14 @@ exports.deleteEvent = async (req, res) => {
 
 // En tant qu’utilisateur non-inscrit je veux pouvoir rechercher un évènement.
 
-exports.getAllEvent = async (req, res) => {
+exports.getEvent = async (req, res) => {
     try {
-        const getEvent = await Event.getAllEvent()
+        const { keyword } = req.query
+
+        if(!keyword)
+            return res.status.json({ message: "Keyword is required" })
+
+        const getEvent = await Event.getEvent(keyword)
         if (getEvent)
             return res.status(200).json({
                 getEvent,
