@@ -33,3 +33,12 @@ exports.deleteFav = async (idEvent) => {
     return del
 }
 
+exports.getFav = async (idUser) => {
+    const get = await sequelize.query('SELECT e.* FROM "Events" e INNER JOIN "events_has_users" f ON f.fk_id_event = e.id_event WHERE f.fk_id_user = :idUser;', {
+        type: QueryTypes.SELECT,
+        replacements: {
+            idUser
+        }
+    })
+    return get
+}
