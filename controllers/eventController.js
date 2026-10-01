@@ -126,9 +126,8 @@ exports.deleteEvent = async (req, res) => {
 exports.getEvent = async (req, res) => {
     try {
         const { keyword } = req.query
-
-        if(!keyword)
-            return res.status.json({ message: "Keyword is required" })
+        if (!keyword)
+            return res.status(404).json({ message: "Keyword is required" })
 
         const getEvent = await Event.getEvent(keyword)
         if (getEvent)
@@ -136,7 +135,28 @@ exports.getEvent = async (req, res) => {
                 getEvent,
                 message: "Reading event successfull"
             })
+        return res.status(200).json({ message: "Aucun événement" })
     } catch (err) {
         return res.status(500).json({ message: "Error view event" });
+    }
+}
+
+exports.getEventById = async (req, res) => {
+    try {
+        const { idEvent } = req.params
+        if (!idEvent)
+            return res.status(404).json({ message: "idEvent not found" })
+
+        const getEventById = await Event.getEventById(idEvent)
+
+        if (getEventById)
+            return res.status(200).json({
+                getEventById,
+                message: "Reading event successfull"
+            })
+        return res.status(200).json({ message: "Aucun événement" })
+
+    } catch (err) {
+        return res.status(500).json({ message: "Error server" });
     }
 }
