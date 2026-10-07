@@ -4,6 +4,7 @@ const cors = require('cors')
 const helmet = require('helmet')
 const rateLimit = require('express-rate-limit')
 const port = 3000
+const path = require('path')
 
 require('dotenv').config()
 
@@ -21,7 +22,7 @@ const favRoutes = require('./routes/favRoutes')
 
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // Fenetre de 15 minutes,
-    limit: 100, // Max 100 requêtes par IP sur ce créneau
+    limit: 1000, // Max 100 requêtes par IP sur ce créneau
     message: { status: 429, error: 'Trop de requête, réessayez plus tard.'}
 })
 app.use(limiter)
@@ -40,6 +41,11 @@ app.use(cors(corsOptions))
 app.use('/api/v1/auth', authRoutes)
 app.use('/api/v1/event', eventRoutes)
 app.use('/api/v1/fav', favRoutes)
+
+app.use(
+    '/uploads',
+    express.static(path.join(process.cwd(), 'uploads'))
+)
 
 app.get('/', (req, res) => {
     res.send('Bienvenue sur mon API RESTful !')

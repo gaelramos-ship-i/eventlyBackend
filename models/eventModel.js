@@ -13,19 +13,19 @@ exports.isEventExist = async (userId, name, date) => {
     return existingEvent
 }
 
-exports.createdEvent = async (name, date, description, address, type, price, userId) => {
-    await sequelize.query('INSERT INTO "Events"(name_event, type_event, date_event, address_event, description_event, price_event, fk_id_user) VALUES(:name, :type, :date, :address, :description, :price, :userId)', {
+exports.createdEvent = async (name, type, date, description, address, userId) => {
+    const result = await sequelize.query(`INSERT INTO "Events"(name_event, type_event, date_event, address_event, description_event, fk_id_user) VALUES(:name, :type, :date, :address, :description, :userId) RETURNING id_event`, {
         type: QueryTypes.INSERT,
         replacements: {
             name,
-            date,
-            description,
-            address,
             type,
-            price,
+            date,
+            address,
+            description,
             userId,
         }
     })
+    return result[0][0]
 }
 
 exports.getEventById = async (idEvent) => {
@@ -42,7 +42,7 @@ exports.updateEvent = async (fields, replacements) => {
     const updateEvent = await sequelize.query(`UPDATE "Events" SET ${fields.join(', ')} WHERE id_event = :idEvent`, {
         type: QueryTypes.UPDATE,
         replacements
-    }) 
+    })
     return updateEvent
 }
 
@@ -61,4 +61,15 @@ exports.getEvent = async (keyword) => {
         type: QueryTypes.SELECT
     })
     return event
+}
+
+exports.updateImage = async (idEvent, image) => {
+    const update = await sequelize.query(`UPDATE "Events" SET image_event = :image WHERE id_event = :idEvent`, {
+        type: QueryTypes.UPDATE,
+        replacements: {
+            idEvent,
+            image
+        }
+    })
+    return update
 }

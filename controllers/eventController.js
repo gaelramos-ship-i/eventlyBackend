@@ -1,27 +1,35 @@
+const sharp = require('sharp')
+const path = require('path')
+const fs = require('fs/promises')
+const { v4: uuidv4 } = require('uuid')
+
 const Event = require('../models/eventModel')
 
 // En tant qu’utilisateur inscrit, je veux pouvoir partager un évènement avec la communauté, avec un titre, une date, une description, une adresse, une catégorie, prix.
 
 exports.addEvent = async (req, res) => {
     try {
+        console.log('REQ.BODY:', req.body)
         const userId = req.user.id_user;
-        const { name, date, description, address, type, price } = req.body
-
+        const { name, type, date, description, address } = req.body
+        console.log('TYPE BACKEND:', type)
         if (!name || !date || !description || !address || !type)
-            return res.status(400).json({ message: "name, date, description, address, type is required" })
+            return res.status(400).json({ message: "name, date, description, address is required" })
 
         const eventExist = await Event.isEventExist(userId, name, date)
 
         if (eventExist.length > 0)
             return res.status(409).json({ message: "This event is already created" })
 
-        await Event.createdEvent(name, date, description, address, type, price, userId)
+        const event = await Event.createdEvent(name, type, date, description, address, userId)
 
-        res.status(201).json({
+        return res.status(201).json({
             message: 'Event created successfully',
+            idEvent: event.id_event
         })
 
     } catch (err) {
+        console.error(err)
         return res.status(500).json({
             message: "Error adding event"
         });
@@ -156,3 +164,75 @@ exports.getEventById = async (req, res) => {
         return res.status(500).json({ message: "Error server" });
     }
 }
+
+exports.updateImage = async (req, res) => {
+    try {
+        const idUser = req.user.id_user;
+        const { idEvent } = req.params;
+
+        const event = await Event.getEventById(idEvent);
+
+        if (event.length === 0) {
+            return res.status(404).json({
+                message: "Event not found"
+            });
+        }
+
+        if (event[0].fk_id_user !== idUser) {
+            return res.status(403).json({
+                message: "You are not the creator of this event"
+            });
+        }
+
+        if (!req.file) {
+            return res.status(400).json({
+                message: "Image is required"
+            });
+        }
+
+        // Dossier de destination
+        const uploadFolder = path.join(
+            process.cwd(),
+            'uploads',
+            'events'
+        )
+
+        await fs.mkdir(uploadFolder, {
+            recursive: true
+        })
+
+        // Nom unique
+        const filename = `${uuidv4()}.webp`
+
+        const outputPath = path.join(
+            uploadFolder,
+            filename
+        )
+
+        // Traitement + sauvegarde
+        await sharp(req.file.buffer)
+            .resize({
+                width: 800,
+                withoutEnlargement: true
+            })
+            .webp({
+                quality: 80
+            })
+            .toFile(outputPath)
+
+        // Chemin enregistré en BDD
+        const imagePath = `/uploads/events/${filename}`
+
+        // Mise à jour de l'événement
+        await Event.updateImage(idEvent, imagePath)
+
+        return res.status(200).json({
+            message: "Event image updated successfully",
+            image: imagePath
+        })
+
+    } catch (err) {
+        console.error(err)
+        return res.status(500).json({ message: "Error server", err });
+    }
+} 
