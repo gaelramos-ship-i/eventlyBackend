@@ -125,11 +125,7 @@ exports.deleteEvent = async (req, res) => {
 
 exports.getEvent = async (req, res) => {
     try {
-        const { keyword } = req.query
-        if (!keyword)
-            return res.status(404).json({ message: "Keyword is required" })
-
-        const getEvent = await Event.getEvent(keyword)
+        const getEvent = await Event.getEvent()
         if (getEvent)
             return res.status(200).json({
                 getEvent,

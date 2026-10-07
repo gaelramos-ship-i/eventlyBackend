@@ -32,8 +32,8 @@ exports.deleteFav = async (req, res) => {
         if (eventExist.length === 0)
             return res.status(404).json({ message: "Event not found" })
 
-        if (eventExist[0].fk_id_user !== idUser)
-            return res.status(403).json({ message: "The favorite doesn't belong to you" })
+        // if (eventExist[0].fk_id_user !== idUser)
+        //     return res.status(403).json({ message: "The favorite doesn't belong to you" })
 
         const deleteFavori = await Fav.deleteFav(idEvent)
         if (deleteFavori)

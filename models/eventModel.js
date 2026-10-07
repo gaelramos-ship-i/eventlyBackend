@@ -57,14 +57,8 @@ exports.deleteEvent = async (idEvent) => {
 }
 
 exports.getEvent = async (keyword) => {
-    const event = await sequelize.query(`SELECT * FROM "Events" WHERE "name_event" ILIKE :keyword 
-        OR "description_event" ILIKE :keyword 
-        OR "address_event" ILIKE :keyword
-        OR "type_event" ILIKE :keyword`, {
-        type: QueryTypes.SELECT,
-        replacements: {
-            keyword: `%${keyword}%`
-        }
+    const event = await sequelize.query(`SELECT * FROM "Events"`, {
+        type: QueryTypes.SELECT
     })
     return event
 }
