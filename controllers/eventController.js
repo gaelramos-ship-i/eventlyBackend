@@ -9,10 +9,10 @@ const Event = require('../models/eventModel')
 
 exports.addEvent = async (req, res) => {
     try {
-        console.log('REQ.BODY:', req.body)
+        
         const userId = req.user.id_user;
         const { name, type, date, description, address } = req.body
-        console.log('TYPE BACKEND:', type)
+        
         if (!name || !date || !description || !address || !type)
             return res.status(400).json({ message: "name, date, description, address is required" })
 

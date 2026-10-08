@@ -18,25 +18,29 @@ const register = async (req, res) => {
 
         const isExistingUser = await User.isExistingUser(email)
 
-        if(isExistingUser == 1)
-            return res.status(400).json({message: 'Email is already use'})
+        if (isExistingUser == 1)
+            return res.status(409).json({
+                title: "Vous ne pouvez pas vous inscrire avec ce mail",
+                status: 409,
+                detail: "Ce mail ne peut pas être utilisé"
+            })
 
-        const isPasswordOK = validator.isStrongPassword(password, {
-            minLength: 6,
-            minLowercase: 1,
-            minUppercase: 1,
-            minNumbers: 1,
-            minSymbols: 1
-        })
+        // const isPasswordOK = validator.isStrongPassword(password, {
+        //     minLength: 6,
+        //     minLowercase: 1,
+        //     minUppercase: 1,
+        //     minNumbers: 1,
+        //     minSymbols: 1
+        // })
 
-        if(!isPasswordOK){
-            return res.status(400).json({message: 'Password must have 1 lower, 1 upper, 1 number and 1 symbol and must be at least 6 caracters long'})
-        }
+        // if(!isPasswordOK){
+        //     return res.status(400).json({message: 'Password must have 1 lower, 1 upper, 1 number and 1 symbol and must be at least 6 caracters long'})
+        // }
 
-        const isEmailOK = validator.isEmail(email)
-        if(!isEmailOK){
-            return res.status(400).json({message: 'You must provide a valid email'})
-        }
+        // const isEmailOK = validator.isEmail(email)
+        // if(!isEmailOK){
+        //     return res.status(400).json({message: 'You must provide a valid email'})
+        // }
 
         await User.createUser(name, email, password)
 
@@ -56,16 +60,20 @@ const login = async (req, res) => {
     try {
         const { email, password } = req.body
 
-        if (!email || !password)
-            return res.status(400).json({ message: 'Please provide email and password' })
+        // if (!email || !password)
+        //     return res.status(400).json({ message: 'Please provide email and password' })
 
         const user = await User.userQuery(email)
-        if(user.count == 0)
-            return res.status(401).json({message: "Invalid credentials"})
+        if (user.count == 0)
+            return res.status(401).json({
+                title: "Identifiants incorrects",
+                status: 401,
+                detail: "Les identifiants ne sont pas corrects"
+            })
 
         const isMatch = await bcrypt.compare(password, user.pass_user)
-        if(!isMatch)
-            return res.status(401).json({message: 'Invalid credentials'})
+        if (!isMatch)
+            return res.status(401).json({ message: 'Invalid credentials' })
 
         const token = generateToken(user.id_user)
 
@@ -78,7 +86,7 @@ const login = async (req, res) => {
                 email: user.email_user
             }
         })
-        
+
     } catch (err) {
         res.status(500).json({ message: 'Server error during login', error: err.message })
     }
