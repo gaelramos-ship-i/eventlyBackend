@@ -73,7 +73,11 @@ const login = async (req, res) => {
 
         const isMatch = await bcrypt.compare(password, user.pass_user)
         if (!isMatch)
-            return res.status(401).json({ message: 'Invalid credentials' })
+            return res.status(401).json({
+                title: "Identifiants incorrects",
+                status: 401,
+                detail: "Les identifiants ne sont pas corrects"
+            })
 
         const token = generateToken(user.id_user)
 

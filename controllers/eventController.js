@@ -9,10 +9,10 @@ const Event = require('../models/eventModel')
 
 exports.addEvent = async (req, res) => {
     try {
-        
+
         const userId = req.user.id_user;
         const { name, type, date, description, address } = req.body
-        
+
         if (!name || !date || !description || !address || !type)
             return res.status(400).json({ message: "name, date, description, address is required" })
 
@@ -142,6 +142,23 @@ exports.getEvent = async (req, res) => {
         return res.status(200).json({ message: "Aucun événement" })
     } catch (err) {
         return res.status(500).json({ message: "Error view event" });
+    }
+}
+
+exports.getEventByUser = async (req, res) => {
+    try {
+        const idUser = req.user.id_user
+        const eventUser = await Event.getByUser(idUser)
+        if (eventUser) {
+            return res.status(200).json({
+                eventUser,
+                message: "Reading event successfull"
+            })
+        }
+        return res.status(200).json({ message: "Aucun événement" })
+    } catch (err) {
+        console.error(err)
+        return res.status(500).json({ message: "Error server" });
     }
 }
 

@@ -38,6 +38,16 @@ exports.getEventById = async (idEvent) => {
     return eventExist
 }
 
+exports.getByUser = async (idUser) => {
+    const eventUser = await sequelize.query('SELECT * FROM "Events" WHERE fk_id_user = :idUser', {
+        type: QueryTypes.SELECT,
+        replacements: {
+            idUser
+        }
+    })
+    return eventUser
+}
+
 exports.updateEvent = async (fields, replacements) => {
     const updateEvent = await sequelize.query(`UPDATE "Events" SET ${fields.join(', ')} WHERE id_event = :idEvent`, {
         type: QueryTypes.UPDATE,
