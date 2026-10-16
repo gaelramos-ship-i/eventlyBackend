@@ -96,4 +96,20 @@ const login = async (req, res) => {
     }
 }
 
-module.exports = { register, login }
+const getUser = async (req, res) => {
+    try {
+        const idUser = req.user.id_user
+        const user = await User.getUserById(idUser)
+        const name = user[0].name_user
+        if (user)
+            return res.status(200).json({
+                name,
+                message: "Reading user successfull"
+            })
+        return res.status(200).json({ message: "Aucun utilisateur" })
+    } catch (err) {
+        return res.status(500).json({ message: "Error view user" });
+    }
+}
+
+module.exports = { register, login, getUser }
