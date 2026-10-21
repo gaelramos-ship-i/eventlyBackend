@@ -22,7 +22,7 @@ const favRoutes = require('./routes/favRoutes')
 
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // Fenetre de 15 minutes,
-    limit: 1000, // Max 100 requêtes par IP sur ce créneau
+    limit: 100, // Max 100 requêtes par IP sur ce créneau
     message: { status: 429, error: 'Trop de requête, réessayez plus tard.'}
 })
 app.use(limiter)

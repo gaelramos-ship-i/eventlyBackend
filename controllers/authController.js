@@ -2,6 +2,8 @@ const jwt = require('jsonwebtoken')
 const validator = require('validator')
 const bcrypt = require('bcryptjs')
 const User = require('../models/userModel')
+const { createHash, randomBytes } = require('crypto')
+const transporter = require('../config/mailer')
 
 const JWT_SECRET = process.env.JWT_SECRET
 const JWT_EXPIRES_IN = '24h'
@@ -112,4 +114,113 @@ const getUser = async (req, res) => {
     }
 }
 
-module.exports = { register, login, getUser }
+const forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body
+
+        if (typeof email !== 'string' ||
+            !validator.isEmail(email.trim())) {
+            return res.status(400).json({
+                message: "Veuillez saisir une adresse email valide."
+            })
+        }
+
+        const user = await User.userQuery(email.trim())
+
+        // Même réponse que l'adresse existe ou non.
+        if (!user) {
+            return res.status(200).json({
+                message: "Si un compte correspond à cette adresse, tu recevras un email."
+            })
+        }
+
+        const token = randomBytes(32).toString('hex')
+        const tokenHash = createHash('sha256')
+            .update(token)
+            .digest('hex')
+
+        const expiresAt = new Date(Date.now() + 15 * 60 * 1000)
+
+        await User.createPasswordResetToken(
+            user.id_user,
+            tokenHash,
+            expiresAt
+        )
+
+        const resetLink =
+            `${process.env.FRONTEND_URL}/reset-password?token=${token}`
+
+        await transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to: user.email_user,
+            subject: 'Réinitialisation du mot de passe Evently',
+            text: `Pour choisir un nouveau mot de passe, ouvre ce lien : ${resetLink}`,
+            html: `
+                <h2>Réinitialisation du mot de passe</h2>
+                <p>Ce lien expire dans 15 minutes.</p>
+                <a href="${resetLink}">Choisir un nouveau mot de passe</a>
+            `
+        })
+
+        return res.status(200).json({
+            message: "Si un compte correspond à cette adresse, tu recevras un email."
+        })
+    } catch (err) {
+        console.error('Erreur forgotPassword :', err.message)
+
+        return res.status(500).json({
+            message: "Une erreur est survenue. Réessaie plus tard."
+        })
+    }
+}
+
+const resetPassword = async (req, res) => {
+    try {
+        const { token, password } = req.body
+
+        if (typeof token !== 'string' || token.length !== 64 ||
+            typeof password !== 'string' ||
+            password.length < 8 || password.length > 72) {
+            return res.status(400).json({
+                message: "Lien invalide ou mot de passe non valide (8 caractères minimum)."
+            })
+        }
+
+        const tokenHash = createHash('sha256')
+            .update(token)
+            .digest('hex')
+
+        const resetToken =
+            await User.getValidPasswordResetToken(tokenHash)
+
+        if (!resetToken) {
+            return res.status(400).json({
+                message: "Ce lien est invalide ou a expiré."
+            })
+        }
+
+        await User.resetUserPassword(
+            resetToken.id,
+            resetToken.id_user,
+            password
+        )
+
+        return res.status(200).json({
+            message: "Ton mot de passe a été modifié avec succès."
+        })
+    } catch (err) {
+        if (err.message === 'RESET_TOKEN_INVALID') {
+            return res.status(400).json({
+                message: "Ce lien est invalide ou a expiré."
+            })
+        }
+
+        console.error('Erreur resetPassword :', err.message)
+
+        return res.status(500).json({
+            message: "Une erreur est survenue."
+        })
+    }
+}
+
+module.exports = { register, login, getUser, forgotPassword, resetPassword }

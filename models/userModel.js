@@ -34,3 +34,63 @@ exports.getUserById = async (id) => {
     })
     return user
 }
+
+exports.createPasswordResetToken = async (idUser, tokenHash, expiresAt) => {
+    await sequelize.query(`
+        INSERT INTO "PasswordResetTokens"
+            (id_user, token_hash, expires_at)
+        VALUES
+            (:idUser, :tokenHash, :expiresAt)
+    `, {
+        replacements: { idUser, tokenHash, expiresAt },
+        type: QueryTypes.INSERT
+    })
+}
+
+exports.getValidPasswordResetToken = async (tokenHash) => {
+    const rows = await sequelize.query(`
+        SELECT id, id_user
+        FROM "PasswordResetTokens"
+        WHERE token_hash = :tokenHash
+          AND expires_at > NOW()
+          AND used = FALSE
+    `, {
+        replacements: { tokenHash },
+        type: QueryTypes.SELECT
+    })
+
+    return rows[0] || null
+}
+
+exports.resetUserPassword = async (tokenId, idUser, newPassword) => {
+    const hash = await bcrypt.hash(newPassword, 15)
+
+    return sequelize.transaction(async (transaction) => {
+        // Réserver le jeton : un seul traitement peut réussir.
+        const [tokens] = await sequelize.query(`
+            UPDATE "PasswordResetTokens"
+            SET used = TRUE
+            WHERE id = :tokenId
+              AND id_user = :idUser
+              AND expires_at > NOW()
+              AND used = FALSE
+            RETURNING id
+        `, {
+            replacements: { tokenId, idUser },
+            transaction
+        })
+
+        if (tokens.length === 0) {
+            throw new Error('RESET_TOKEN_INVALID')
+        }
+
+        await sequelize.query(`
+            UPDATE "Users"
+            SET pass_user = :password
+            WHERE id_user = :idUser
+        `, {
+            replacements: { password: hash, idUser },
+            transaction
+        })
+    })
+}
