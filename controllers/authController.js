@@ -94,6 +94,7 @@ const login = async (req, res) => {
         })
 
     } catch (err) {
+        console.error(err)
         res.status(500).json({ message: 'Server error during login', error: err.message })
     }
 }
@@ -103,9 +104,11 @@ const getUser = async (req, res) => {
         const idUser = req.user.id_user
         const user = await User.getUserById(idUser)
         const name = user[0].name_user
+        const email = user[0].email_user
         if (user)
             return res.status(200).json({
                 name,
+                email,
                 message: "Reading user successfull"
             })
         return res.status(200).json({ message: "Aucun utilisateur" })
@@ -223,4 +226,46 @@ const resetPassword = async (req, res) => {
     }
 }
 
-module.exports = { register, login, getUser, forgotPassword, resetPassword }
+const updateUser = async (req, res) => {
+    try {
+        const idUser = req.user.id_user;
+        const { name, email } = req.body;
+
+        if (!name || !email) {
+            return res.status(400).json({
+                message: "Le nom et l'email sont obligatoires."
+            });
+        }
+
+        if (!validator.isEmail(email)) {
+            return res.status(400).json({
+                message: "Veuillez saisir une adresse email valide."
+            });
+        }
+
+        await User.updateUser(idUser, name, email);
+
+        return res.status(200).json({
+            message: "Profil modifié avec succès.",
+            user: {
+                id: idUser,
+                name,
+                email
+            }
+        });
+    } catch (err) {
+        console.error(err);
+
+        if (err.code === "ER_DUP_ENTRY") {
+            return res.status(409).json({
+                message: "Cette adresse email est déjà utilisée."
+            });
+        }
+
+        return res.status(500).json({
+            message: "Erreur lors de la modification du profil."
+        });
+    }
+};
+
+module.exports = { register, login, getUser, forgotPassword, resetPassword, updateUser }

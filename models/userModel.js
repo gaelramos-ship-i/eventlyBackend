@@ -94,3 +94,17 @@ exports.resetUserPassword = async (tokenId, idUser, newPassword) => {
         })
     })
 }
+
+exports.updateUser = async (id, name, email) => {
+    console.log(id)
+    const profil = await sequelize.query(`
+        UPDATE "Users"
+        SET name_user = :name, email_user = :email
+        WHERE id_user = :id
+    `, {
+        replacements: { id, name, email },
+        type: QueryTypes.UPDATE
+    })
+    return profil[0]
+}
+

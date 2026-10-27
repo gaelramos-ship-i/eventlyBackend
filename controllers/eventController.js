@@ -4,6 +4,7 @@ const fs = require('fs/promises')
 const { v4: uuidv4 } = require('uuid')
 
 const Event = require('../models/eventModel')
+const Favorite = require('../models/favModel')
 
 // En tant qu’utilisateur inscrit, je veux pouvoir partager un évènement avec la communauté, avec un titre, une date, une description, une adresse, une catégorie, prix.
 
@@ -118,6 +119,8 @@ exports.deleteEvent = async (req, res) => {
 
         if (event[0].fk_id_user !== idUser)
             return res.status(403).json({ message: "You are not the creator of this event" })
+
+        await Favorite.deleteFav(idEvent);
 
         const deletingEvent = await Event.deleteEvent(idEvent)
 
