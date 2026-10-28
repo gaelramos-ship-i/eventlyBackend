@@ -34,7 +34,7 @@ app.use(
 )
 app.use(express.json())
 const corsOptions = {
-    origin: ['http://localhost:3000', 'http://localhost:5173']
+    origin: ['https://eventlybackend.onrender.com/', 'https://evently-frontend-indol.vercel.app/']
 }
 app.use(cors(corsOptions))
 
