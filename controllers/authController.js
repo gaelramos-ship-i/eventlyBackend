@@ -169,7 +169,6 @@ const forgotPassword = async (req, res) => {
             message: "Si un compte correspond à cette adresse, tu recevras un email."
         })
     } catch (err) {
-        console.error('Erreur forgotPassword :', err.message)
 
         return res.status(500).json({
             message: "Une erreur est survenue. Réessaie plus tard."
