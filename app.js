@@ -34,7 +34,7 @@ app.use(
 )
 app.use(express.json())
 const corsOptions = {
-    origin: ['https://evently-frontend-indol.vercel.app']
+    origin: ['https://evently-frontend-indol.vercel.app', 'http://localhost:5173']
 }
 app.use(cors(corsOptions))
 
