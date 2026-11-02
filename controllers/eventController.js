@@ -1,7 +1,6 @@
 const sharp = require('sharp')
-const path = require('path')
-const fs = require('fs/promises')
-const { v4: uuidv4 } = require('uuid')
+const { randomUUID } = require('crypto')
+const supabase = require('../config/supabase')
 
 const Event = require('../models/eventModel')
 const Favorite = require('../models/favModel')
@@ -210,45 +209,33 @@ exports.updateImage = async (req, res) => {
             });
         }
 
-        // Dossier de destination
-        const uploadFolder = path.join(
-            process.cwd(),
-            'uploads',
-            'events'
-        )
+        const bucket = process.env.SUPABASE_BUCKET
+        const storagePath = `events/${randomUUID()}.webp`
 
-        await fs.mkdir(uploadFolder, {
-            recursive: true
-        })
+        const imageBuffer = await sharp(req.file.buffer)
+            .resize({ width: 800, withoutEnlargement: true })
+            .webp({ quality: 80 })
+            .toBuffer()
 
-        // Nom unique
-        const filename = `${uuidv4()}.webp`
-
-        const outputPath = path.join(
-            uploadFolder,
-            filename
-        )
-
-        // Traitement + sauvegarde
-        await sharp(req.file.buffer)
-            .resize({
-                width: 800,
-                withoutEnlargement: true
+        const { error: uploadError } = await supabase.storage
+            .from(bucket)
+            .upload(storagePath, imageBuffer, {
+                contentType: 'image/webp',
+                cacheControl: '31536000',
+                upsert: false,
             })
-            .webp({
-                quality: 80
-            })
-            .toFile(outputPath)
 
-        // Chemin enregistré en BDD
-        const imagePath = `/uploads/events/${filename}`
+        if (uploadError) throw uploadError
 
-        // Mise à jour de l'événement
-        await Event.updateImage(idEvent, imagePath)
+        const { data } = supabase.storage
+            .from(bucket)
+            .getPublicUrl(storagePath)
+
+        await Event.updateImage(idEvent, data.publicUrl)
 
         return res.status(200).json({
-            message: "Event image updated successfully",
-            image: imagePath
+            message: 'Event image updated successfully',
+            image: data.publicUrl,
         })
 
     } catch (err) {
