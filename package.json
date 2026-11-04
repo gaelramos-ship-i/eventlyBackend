@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node --test --test-name-pattern=Contrôleurs test/auth.test.js test/event.test.js test/fav.test.js",
+    "test:integration": "node --test test/auth.test.js test/event.test.js",
     "start": "node app.js"
   },
   "keywords": [],
