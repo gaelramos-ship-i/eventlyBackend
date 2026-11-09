@@ -16,6 +16,29 @@ const startServer = async () => {
 }
 startServer()
 
+// const swaggerJsdoc = require('swagger-jsdoc')
+const swaggerUi = require('swagger-ui-express')
+const swaggerDocument = require('./swagger-output.json')
+
+// const swaggerOption = {
+//     definition: {
+//         openapi: '3.0.0',
+//         info: {
+//             title: 'API Evently',
+//             version: '1.0.0',
+//             description: 'Documenation API'
+//         },
+//         servers: [
+//             {
+//                 url: `http://localhost:${port}/api/v1`
+//             }
+//         ]
+//     },
+//     apis: ['./routes/*.js']
+// }
+
+// const swaggerSpec = swaggerJsdoc(swaggerOption)
+
 const authRoutes = require('./routes/authRoutes')
 const eventRoutes = require('./routes/eventRoutes')
 const favRoutes = require('./routes/favRoutes')
@@ -41,6 +64,8 @@ app.use(cors(corsOptions))
 app.use('/api/v1/auth', authRoutes)
 app.use('/api/v1/event', eventRoutes)
 app.use('/api/v1/fav', favRoutes)
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument))
 
 app.use(
     '/uploads',

@@ -6,6 +6,7 @@
   "scripts": {
     "test": "node --test --test-name-pattern=Contrôleurs test/auth.test.js test/event.test.js test/fav.test.js",
     "test:integration": "node --test test/auth.test.js test/event.test.js",
+    "swagger": "node swagger.js",
     "start": "node app.js"
   },
   "keywords": [],
@@ -26,6 +27,8 @@
     "pg": "^8.23.0",
     "sequelize": "^6.37.8",
     "sharp": "^0.35.5",
+    "swagger-autogen": "^2.23.7",
+    "swagger-ui-express": "^5.0.1",
     "validator": "^13.15.35",
     "zod": "^4.6.5"
   }
