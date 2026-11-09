@@ -230,7 +230,8 @@ exports.updateImage = async (req, res) => {
             .from(bucket)
             .getPublicUrl(storagePath)
 
-        await Event.updateImage(idEvent, data.publicUrl)
+        const imageUrl = `${data.publicUrl}?v=${Date.now()}`
+        await Event.updateImage(idEvent, imageUrl)
 
         return res.status(200).json({
             message: 'Event image updated successfully',
