@@ -1,5 +1,4 @@
 const sharp = require('sharp')
-const { randomUUID } = require('crypto')
 const supabase = require('../config/supabase')
 
 const Event = require('../models/eventModel')
@@ -210,7 +209,7 @@ exports.updateImage = async (req, res) => {
         }
 
         const bucket = process.env.SUPABASE_BUCKET
-        const storagePath = `events/${randomUUID()}.webp`
+        const storagePath = `events/${idEvent}.webp`
 
         const imageBuffer = await sharp(req.file.buffer)
             .resize({ width: 800, withoutEnlargement: true })
@@ -222,7 +221,7 @@ exports.updateImage = async (req, res) => {
             .upload(storagePath, imageBuffer, {
                 contentType: 'image/webp',
                 cacheControl: '31536000',
-                upsert: false,
+                upsert: true,
             })
 
         if (uploadError) throw uploadError
