@@ -1,4 +1,5 @@
 const sharp = require('sharp')
+const { randomUUID } = require('crypto')
 const supabase = require('../config/supabase')
 
 const Event = require('../models/eventModel')
@@ -209,7 +210,8 @@ exports.updateImage = async (req, res) => {
         }
 
         const bucket = process.env.SUPABASE_BUCKET
-        const storagePath = `events/${idEvent}.webp`
+        const oldImageUrl = event[0].image_event
+        const storagePath = `events/${randomUUID()}.webp`
 
         const imageBuffer = await sharp(req.file.buffer)
             .resize({ width: 800, withoutEnlargement: true })
@@ -221,7 +223,7 @@ exports.updateImage = async (req, res) => {
             .upload(storagePath, imageBuffer, {
                 contentType: 'image/webp',
                 cacheControl: '31536000',
-                upsert: true,
+                upsert: false,
             })
 
         if (uploadError) throw uploadError
@@ -230,12 +232,27 @@ exports.updateImage = async (req, res) => {
             .from(bucket)
             .getPublicUrl(storagePath)
 
-        const imageUrl = `${data.publicUrl}?v=${Date.now()}`
+        const imageUrl = data.publicUrl
         await Event.updateImage(idEvent, imageUrl)
+
+        // L'URL de Supabase contient le chemin du fichier après le nom du bucket.
+        const bucketPath = `/storage/v1/object/public/${bucket}/`
+        const oldImagePath = oldImageUrl?.split(bucketPath)[1]?.split('?')[0]
+
+        // On supprime l'ancien fichier seulement après avoir enregistré le nouveau.
+        if (oldImagePath && oldImagePath !== storagePath) {
+            const { error: deleteError } = await supabase.storage
+                .from(bucket)
+                .remove([decodeURIComponent(oldImagePath)])
+
+            if (deleteError) {
+                console.error('Unable to delete previous event image:', deleteError)
+            }
+        }
 
         return res.status(200).json({
             message: 'Event image updated successfully',
-            image: data.publicUrl,
+            image: imageUrl,
         })
 
     } catch (err) {
