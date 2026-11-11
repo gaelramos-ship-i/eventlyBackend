@@ -67,11 +67,6 @@ app.use('/api/v1/fav', favRoutes)
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument))
 
-app.use(
-    '/uploads',
-    express.static(path.join(process.cwd(), 'uploads'))
-)
-
 app.get('/', (req, res) => {
     res.send('Bienvenue sur mon API RESTful !')
 })
