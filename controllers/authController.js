@@ -110,6 +110,7 @@ const getUser = async (req, res) => {
             return res.status(200).json({
                 name,
                 email,
+                role: user[0].role_user,
                 message: "Reading user successfull"
             })
         return res.status(200).json({ message: "Aucun utilisateur" })
