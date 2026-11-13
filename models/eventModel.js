@@ -14,7 +14,7 @@ exports.isEventExist = async (userId, name, date) => {
 }
 
 exports.createdEvent = async (name, type, date, description, address, userId) => {
-    const result = await sequelize.query(`INSERT INTO "Events"(name_event, type_event, date_event, address_event, description_event, fk_id_user) VALUES(:name, :type, :date, :address, :description, :userId) RETURNING id_event`, {
+    const result = await sequelize.query(`INSERT INTO "Events"(name_event, type_event, date_event, address_event, description_event, fk_id_user, status_event) VALUES(:name, :type, :date, :address, :description, :userId, 'pending') RETURNING id_event`, {
         type: QueryTypes.INSERT,
         replacements: {
             name,
@@ -49,7 +49,7 @@ exports.getByUser = async (idUser) => {
 }
 
 exports.updateEvent = async (fields, replacements) => {
-    const updateEvent = await sequelize.query(`UPDATE "Events" SET ${fields.join(', ')} WHERE id_event = :idEvent`, {
+    const updateEvent = await sequelize.query(`UPDATE "Events" SET ${fields.join(', ')}, status_event = 'pending' WHERE id_event = :idEvent`, {
         type: QueryTypes.UPDATE,
         replacements
     })
@@ -66,11 +66,38 @@ exports.deleteEvent = async (idEvent) => {
     return deleteEvent
 }
 
-exports.getEvent = async (keyword) => {
-    const event = await sequelize.query(`SELECT * FROM "Events"`, {
+exports.getEvent = async () => {
+    return sequelize.query(`
+        SELECT *
+        FROM "Events"
+        WHERE status_event = 'approved'
+    `, {
         type: QueryTypes.SELECT
     })
-    return event
+}
+
+exports.getPendingEvents = async () => {
+    return sequelize.query(`
+        SELECT *
+        FROM "Events"
+        WHERE status_event = 'pending'
+        ORDER BY id_event ASC
+    `, {
+        type: QueryTypes.SELECT
+    })
+}
+
+exports.setEventStatus = async (idEvent, status) => {
+    return sequelize.query(`
+        UPDATE "Events"
+        SET status_event = :status
+        WHERE id_event = :idEvent
+        AND status_event = 'pending'
+        RETURNING id_event, status_event
+    `, {
+        replacements: { idEvent, status },
+        type: QueryTypes.UPDATE
+    })
 }
 
 exports.updateImage = async (idEvent, image) => {

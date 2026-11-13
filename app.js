@@ -42,10 +42,11 @@ const swaggerDocument = require('./swagger-output.json')
 const authRoutes = require('./routes/authRoutes')
 const eventRoutes = require('./routes/eventRoutes')
 const favRoutes = require('./routes/favRoutes')
+const adminRoutes = require('./routes/adminRoutes')
 
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // Fenetre de 15 minutes,
-    limit: 1000, // Max 100 requêtes par IP sur ce créneau
+    limit: 100, // Max 100 requêtes par IP sur ce créneau
     message: { status: 429, error: 'Trop de requête, réessayez plus tard.'}
 })
 app.use(limiter)
@@ -64,6 +65,7 @@ app.use(cors(corsOptions))
 app.use('/api/v1/auth', authRoutes)
 app.use('/api/v1/event', eventRoutes)
 app.use('/api/v1/fav', favRoutes)
+app.use('/api/v1/admin', adminRoutes)
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument))
 

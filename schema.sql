@@ -6,6 +6,7 @@ CREATE TABLE public.Users (
   name_user character varying NOT NULL,
   email_user character varying NOT NULL UNIQUE,
   pass_user character varying NOT NULL,
+  role_user character varying NOT NULL DEFAULT 'member'::character varying,
   CONSTRAINT Users_pkey PRIMARY KEY (id_user)
 );
 CREATE TABLE public.Events (
@@ -17,6 +18,7 @@ CREATE TABLE public.Events (
   fk_id_user integer NOT NULL,
   date_event date NOT NULL,
   image_event character varying,
+  status_event character varying NOT NULL DEFAULT 'pending'::character varying,
   CONSTRAINT Events_pkey PRIMARY KEY (id_event),
   CONSTRAINT fk_events_users1 FOREIGN KEY (fk_id_user) REFERENCES public.Users(id_user)
 );
