@@ -6,3 +6,5 @@ const { getPendingEvents, moderateEvent } = require('../controllers/adminControl
 
 router.get('/pending', authMiddleware, adminMiddleware, getPendingEvents)
 router.patch('/:idEvent/status', authMiddleware, adminMiddleware, moderateEvent)
+
+module.exports = router
