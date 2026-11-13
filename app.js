@@ -46,7 +46,7 @@ const adminRoutes = require('./routes/adminRoutes')
 
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // Fenetre de 15 minutes,
-    limit: 100, // Max 100 requêtes par IP sur ce créneau
+    limit: 500, // Max 100 requêtes par IP sur ce créneau
     message: { status: 429, error: 'Trop de requête, réessayez plus tard.'}
 })
 app.use(limiter)
