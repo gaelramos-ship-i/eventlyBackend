@@ -1,4 +1,5 @@
 const Event = require('../models/eventModel')
+const User = require('../models/userModel')
 
 exports.getPendingEvents = async (req, res) => {
     try {
@@ -58,6 +59,86 @@ exports.moderateEvent = async (req, res) => {
         console.error(err)
         return res.status(500).json({
             message: 'Erreur lors de la modération de l’événement.'
+        })
+    }
+}
+
+exports.getUsers = async (req, res) => {
+    try {
+        const users = await User.getAllUsers()
+        return res.status(200).json({ users })
+    } catch (err) {
+        console.error(err)
+        return res.status(500).json({
+            message: 'Erreur lors de la récupération des utilisateurs.'
+        })
+    }
+}
+
+exports.updateUserRole = async (req, res) => {
+    try {
+        const id = Number(req.params.id)
+        const { role } = req.body
+
+        if (!Number.isInteger(id) || id <= 0) {
+            return res.status(400).json({ message: 'Identifiant invalide.' })
+        }
+
+        if (!['member', 'admin'].includes(role)) {
+            return res.status(400).json({
+                message: "Le rôle doit être 'member' ou 'admin'."
+            })
+        }
+
+        if (id === req.user.id_user && role !== 'admin') {
+            return res.status(400).json({
+                message: 'Tu ne peux pas retirer ton propre rôle administrateur.'
+            })
+        }
+
+        const users = await User.setUserRole(id, role)
+
+        if (users.length === 0) {
+            return res.status(404).json({ message: 'Utilisateur introuvable.' })
+        }
+
+        return res.status(200).json({
+            message: 'Rôle utilisateur modifié.',
+            user: users[0]
+        })
+    } catch (err) {
+        console.error(err)
+        return res.status(500).json({
+            message: 'Erreur lors de la modification du rôle.'
+        })
+    }
+}
+
+exports.removeUser = async (req, res) => {
+    try {
+        const id = Number(req.params.id)
+
+        if (!Number.isInteger(id) || id <= 0) {
+            return res.status(400).json({ message: 'Identifiant invalide.' })
+        }
+
+        if (id === req.user.id_user) {
+            return res.status(400).json({
+                message: 'Tu ne peux pas supprimer ton propre compte administrateur.'
+            })
+        }
+
+        const deletedUsers = await User.deleteUser(id)
+
+        if (deletedUsers.length === 0) {
+            return res.status(404).json({ message: 'Utilisateur introuvable.' })
+        }
+
+        return res.status(200).json({ message: 'Utilisateur supprimé.' })
+    } catch (err) {
+        console.error(err)
+        return res.status(500).json({
+            message: 'Erreur lors de la suppression de l’utilisateur.'
         })
     }
 }

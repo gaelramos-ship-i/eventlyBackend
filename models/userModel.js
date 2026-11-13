@@ -108,3 +108,35 @@ exports.updateUser = async (id, name, email) => {
     return profil[0]
 }
 
+exports.getAllUsers = async () => {
+    return sequelize.query(`
+        SELECT id_user, name_user, email_user, role_user
+        FROM "Users"
+        ORDER BY id_user ASC
+    `, {
+        type: QueryTypes.SELECT
+    })
+}
+
+exports.setUserRole = async (id, role) => {
+    return sequelize.query(`
+        UPDATE "Users"
+        SET role_user = :role
+        WHERE id_user = :id
+        RETURNING id_user, name_user, email_user, role_user
+    `, {
+        replacements: { id, role },
+        type: QueryTypes.SELECT
+    })
+}
+
+exports.deleteUser = async (id) => {
+    return sequelize.query(`
+        DELETE FROM "Users"
+        WHERE id_user = :id
+        RETURNING id_user
+    `, {
+        replacements: { id },
+        type: QueryTypes.SELECT
+    })
+}
